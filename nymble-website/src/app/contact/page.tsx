@@ -1,11 +1,56 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Contact NymbleAI - Let\'s Start a Conversation',
+  description: 'Get in touch with NymbleAI to discuss your AI needs. Schedule a demo, explore custom solutions, or learn more about our services.',
+  keywords: 'contact NymbleAI, AI consultation, demo request, custom AI solutions, business automation',
+  openGraph: {
+    title: 'Contact NymbleAI - Let\'s Start a Conversation',
+    description: 'Get in touch with NymbleAI to discuss your AI needs. Schedule a demo, explore custom solutions, or learn more about our services.',
+    type: 'website',
+    url: 'https://nymbleai.com/contact',
+    images: [
+      {
+        url: '/og-contact.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'Contact NymbleAI',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Contact NymbleAI - Let\'s Start a Conversation',
+    description: 'Get in touch with NymbleAI to discuss your AI needs. Schedule a demo, explore custom solutions, or learn more about our services.',
+    images: ['/og-contact.jpg'],
+  },
+};
+
 'use client';
 
 import { motion } from 'framer-motion';
-import { Mail, Phone, MapPin, Clock, Send, MessageSquare, Calendar } from 'lucide-react';
+import { Mail, Phone, MapPin, Clock, Send, MessageSquare, Calendar, CheckCircle, AlertCircle } from 'lucide-react';
 import { useState } from 'react';
 
+interface FormData {
+  name: string;
+  company: string;
+  email: string;
+  phone: string;
+  interest: string;
+  message: string;
+  source: string;
+}
+
+interface FormErrors {
+  name?: string;
+  company?: string;
+  email?: string;
+  interest?: string;
+}
+
 export default function ContactPage() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormData>({
     name: '',
     company: '',
     email: '',
@@ -15,7 +60,9 @@ export default function ContactPage() {
     source: ''
   });
 
+  const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   const fadeInUp = {
     initial: { opacity: 0, y: 60 },
@@ -23,32 +70,109 @@ export default function ContactPage() {
     transition: { duration: 0.6 }
   };
 
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required';
+    }
+
+    if (!formData.company.trim()) {
+      newErrors.company = 'Company is required';
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address';
+    }
+
+    if (!formData.interest) {
+      newErrors.interest = 'Please select your area of interest';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+
+    // Clear error when user starts typing
+    if (errors[name as keyof FormErrors]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: undefined
+      }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setIsSubmitting(true);
     
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    alert('Thank you! We\'ll get back to you within 24 business hours.');
-    setFormData({
-      name: '',
-      company: '',
-      email: '',
-      phone: '',
-      interest: '',
-      message: '',
-      source: ''
-    });
-    setIsSubmitting(false);
+    try {
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Here you would typically send the data to your backend
+      console.log('Form submitted:', formData);
+      
+      setIsSubmitted(true);
+      setFormData({
+        name: '',
+        company: '',
+        email: '',
+        phone: '',
+        interest: '',
+        message: '',
+        source: ''
+      });
+    } catch (error) {
+      console.error('Form submission error:', error);
+      alert('There was an error submitting your form. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (isSubmitted) {
+    return (
+      <div className="min-h-screen pt-20 flex items-center justify-center">
+        <motion.div 
+          className="max-w-2xl mx-auto text-center px-6"
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="bg-white rounded-3xl p-12 shadow-lg border border-gray-200">
+            <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle className="w-10 h-10 text-green-600" />
+            </div>
+            <h1 className="text-4xl font-bold mb-4">Thank You!</h1>
+            <p className="text-xl text-gray-600 mb-8">
+              We've received your message and will get back to you within 24 business hours.
+            </p>
+            <button 
+              onClick={() => setIsSubmitted(false)}
+              className="btn-primary"
+            >
+              Send Another Message
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-20">
@@ -95,12 +219,19 @@ export default function ContactPage() {
                         type="text"
                         id="name"
                         name="name"
-                        required
                         value={formData.name}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors ${
+                          errors.name ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         placeholder="Your full name"
                       />
+                      {errors.name && (
+                        <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                          <AlertCircle className="w-4 h-4" />
+                          {errors.name}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label htmlFor="company" className="block text-sm font-medium text-gray-700 mb-2">
@@ -110,12 +241,19 @@ export default function ContactPage() {
                         type="text"
                         id="company"
                         name="company"
-                        required
                         value={formData.company}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors ${
+                          errors.company ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         placeholder="Your company"
                       />
+                      {errors.company && (
+                        <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                          <AlertCircle className="w-4 h-4" />
+                          {errors.company}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -128,12 +266,19 @@ export default function ContactPage() {
                         type="email"
                         id="email"
                         name="email"
-                        required
                         value={formData.email}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
+                        className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors ${
+                          errors.email ? 'border-red-500' : 'border-gray-300'
+                        }`}
                         placeholder="your@email.com"
                       />
+                      {errors.email && (
+                        <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                          <AlertCircle className="w-4 h-4" />
+                          {errors.email}
+                        </p>
+                      )}
                     </div>
                     <div>
                       <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-2">
@@ -153,14 +298,16 @@ export default function ContactPage() {
 
                   <div>
                     <label htmlFor="interest" className="block text-sm font-medium text-gray-700 mb-2">
-                      I'm interested in:
+                      I'm interested in: *
                     </label>
                     <select
                       id="interest"
                       name="interest"
                       value={formData.interest}
                       onChange={handleInputChange}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors"
+                      className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-colors ${
+                        errors.interest ? 'border-red-500' : 'border-gray-300'
+                      }`}
                     >
                       <option value="">Please select...</option>
                       <option value="nymblsense-demo">NymbleSense Demo</option>
@@ -168,6 +315,12 @@ export default function ContactPage() {
                       <option value="partnership">General Partnership</option>
                       <option value="other">Other</option>
                     </select>
+                    {errors.interest && (
+                      <p className="mt-1 text-sm text-red-600 flex items-center gap-1">
+                        <AlertCircle className="w-4 h-4" />
+                        {errors.interest}
+                      </p>
+                    )}
                   </div>
 
                   <div>
@@ -200,8 +353,8 @@ export default function ContactPage() {
                       <option value="google">Google Search</option>
                       <option value="linkedin">LinkedIn</option>
                       <option value="referral">Referral</option>
-                      <option value="content">Blog/Content</option>
-                      <option value="event">Event/Conference</option>
+                      <option value="social-media">Social Media</option>
+                      <option value="conference">Conference/Event</option>
                       <option value="other">Other</option>
                     </select>
                   </div>
@@ -209,17 +362,19 @@ export default function ContactPage() {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full btn-primary text-lg py-4 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className={`w-full btn-primary flex items-center justify-center gap-3 ${
+                      isSubmitting ? 'opacity-75 cursor-not-allowed' : ''
+                    }`}
                   >
                     {isSubmitting ? (
                       <>
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                        Sending...
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Sending Message...
                       </>
                     ) : (
                       <>
-                        <Send size={20} />
                         Send Message
+                        <Send size={20} />
                       </>
                     )}
                   </button>
@@ -237,18 +392,15 @@ export default function ContactPage() {
             >
               <div className="space-y-8">
                 {/* Schedule Meeting */}
-                <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-3xl p-8">
+                <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-3xl p-8 text-white">
                   <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center">
-                      <Calendar className="w-6 h-6 text-white" />
-                    </div>
+                    <Calendar className="w-8 h-8" />
                     <h3 className="text-2xl font-bold">Schedule a Meeting</h3>
                   </div>
-                  <p className="text-gray-600 mb-6">
+                  <p className="text-blue-100 mb-6">
                     Book time directly with our team for a personalized discussion about your AI needs.
                   </p>
-                  <button className="btn-primary w-full">
-                    <Calendar size={20} />
+                  <button className="btn-secondary border-blue-300 text-blue-300 hover:bg-blue-300 hover:text-blue-900 w-full">
                     Book a Call
                   </button>
                 </div>
@@ -258,33 +410,29 @@ export default function ContactPage() {
                   <h3 className="text-2xl font-bold mb-6">Direct Contact</h3>
                   <div className="space-y-4">
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                        <Mail className="w-6 h-6 text-orange-600" />
+                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <Mail className="w-6 h-6 text-blue-600" />
                       </div>
                       <div>
-                        <p className="font-semibold">Email</p>
-                        <a href="mailto:hello@nymbleai.com" className="text-blue-600 hover:text-blue-800">
-                          hello@nymbleai.com
-                        </a>
+                        <p className="font-medium">Email</p>
+                        <p className="text-gray-600">hello@nymbleai.com</p>
                       </div>
                     </div>
-                    
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
                         <Clock className="w-6 h-6 text-green-600" />
                       </div>
                       <div>
-                        <p className="font-semibold">Response Time</p>
+                        <p className="font-medium">Response Time</p>
                         <p className="text-gray-600">Within 24 business hours</p>
                       </div>
                     </div>
-
                     <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                        <MapPin className="w-6 h-6 text-purple-600" />
+                      <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                        <MapPin className="w-6 h-6 text-orange-600" />
                       </div>
                       <div>
-                        <p className="font-semibold">Location</p>
+                        <p className="font-medium">Location</p>
                         <p className="text-gray-600">Distributed team serving clients globally</p>
                       </div>
                     </div>
@@ -292,18 +440,16 @@ export default function ContactPage() {
                 </div>
 
                 {/* Alternative CTA */}
-                <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-3xl p-8">
+                <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-3xl p-8 border border-orange-200">
                   <h3 className="text-2xl font-bold mb-4">Not ready to reach out yet?</h3>
                   <p className="text-gray-600 mb-6">
-                    Explore our resources to learn more about AI implementation for your business.
+                    Download our resources to learn more about AI implementation and readiness.
                   </p>
-                  <div className="flex flex-col gap-3">
+                  <div className="space-y-3">
                     <button className="btn-secondary w-full">
-                      <MessageSquare size={20} />
                       Download AI Readiness Assessment
                     </button>
                     <button className="btn-secondary w-full">
-                      <Mail size={20} />
                       Subscribe to AI Insights Newsletter
                     </button>
                   </div>

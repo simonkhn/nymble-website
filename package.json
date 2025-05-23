@@ -1,0 +1,12 @@
+{
+  "dependencies": {
+    "framer-motion": "^12.12.2",
+    "lucide-react": "^0.511.0"
+  },
+  "devDependencies": {
+    "@types/next": "^8.0.7",
+    "@types/node": "^22.15.21",
+    "@types/react": "^19.1.5",
+    "@types/react-dom": "^19.1.5"
+  }
+}

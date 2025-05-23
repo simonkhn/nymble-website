@@ -1,3 +1,31 @@
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'NymbleAI - Amplify Your Business with Intelligent Automation',
+  description: 'Transform your business with AI-powered solutions. NymbleAI offers NymbleSense interaction intelligence platform and custom AI development services.',
+  keywords: 'AI automation, business intelligence, NymbleSense, AI platform, custom AI solutions, interaction intelligence',
+  openGraph: {
+    title: 'NymbleAI - Amplify Your Business with Intelligent Automation',
+    description: 'Transform your business with AI-powered solutions. NymbleAI offers NymbleSense interaction intelligence platform and custom AI development services.',
+    type: 'website',
+    url: 'https://nymbleai.com',
+    images: [
+      {
+        url: '/og-home.jpg',
+        width: 1200,
+        height: 630,
+        alt: 'NymbleAI - Intelligent Business Automation',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'NymbleAI - Amplify Your Business with Intelligent Automation',
+    description: 'Transform your business with AI-powered solutions. NymbleAI offers NymbleSense interaction intelligence platform and custom AI development services.',
+    images: ['/og-home.jpg'],
+  },
+};
+
 'use client';
 
 import Link from 'next/link';
